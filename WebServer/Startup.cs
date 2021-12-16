@@ -29,23 +29,42 @@ namespace WebServer
 
             app.Run(async context =>
             {
-                if (context.Request.Query.ContainsKey("GetMessages"))
+                if (context.Request.Method == "POST")
                 {
-                    StringBuilder msgs = new StringBuilder();
-                    for(int i=messages.Count-1,t=5;i>=0 && t > 0; i--, t--)
+                    if (context.Request.Query.ContainsKey("GetMessages"))
                     {
-                        msgs.Append(messages[i]).Append("<br>");
+                        StringBuilder msgs = new StringBuilder();
+                        for (int i = messages.Count - 1, t = 5; i >= 0 && t > 0; i--, t--)
+                        {
+                            msgs.Append(messages[i]).Append("<br>");
+                        }
+                        await context.Response.WriteAsync(msgs.ToString());
                     }
-                    await context.Response.WriteAsync(msgs.ToString());
-                }
-                else
-                {
-                    if (context.Request.Query.ContainsKey("NewMessage"))
-                    {
+                    else if (context.Request.Query.ContainsKey("NewMessage"))
                         messages.Add(context.Request.Query["NewMessage"]);
-                    }
+
+
                 }
-                
+                else if (context.Request.Method == "GET")
+                {
+                    if (context.Request.Headers.ContainsKey("GetMessages"))
+                    {
+                        StringBuilder msgs = new StringBuilder();
+                        for (int i = messages.Count - 1, t = 5; i >= 0 && t > 0; i--, t--)
+                        {
+                            msgs.Append(messages[i]).Append("<br>");
+                        }
+                        Console.WriteLine("sending: "+msgs.ToString());
+                        await context.Response.WriteAsync(msgs.ToString());
+                    }
+                    else if (context.Request.Headers.ContainsKey("NewMessage"))
+                    {
+                        messages.Add(context.Request.Headers["NewMessage"]);
+                        Console.WriteLine("New message: " + context.Request.Headers["NewMessage"]);
+                    }
+
+                }
+
             });
         }
 
